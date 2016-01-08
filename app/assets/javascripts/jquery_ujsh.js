@@ -210,6 +210,10 @@
     }
 
     options = $.extend(true, defaultOptions, options || {});
+    if (this.data('error-redirect')) options.error.redirect = this.data('error-redirect')
+    if (this.data('success-redirect')) options.success.redirect = this.data('success-redirect')
+    if (this.data('error-reporting-style')) options.error.reporting.style = this.data('error-reporting-style')
+    if (this.data('success-reporting-style')) options.error.reporting.style = this.data('success-reporting-style')
 
     if (!options.before.disable) this.on('ajax:before', options.before.handler.bind(this));
     if (!options.error.disable) this.on('ajax:error', options.error.handler.bind(this));
