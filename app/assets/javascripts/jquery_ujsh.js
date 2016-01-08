@@ -9,6 +9,8 @@
 
   $.fn.ujsh = function (options) {
 
+    var DEFAULT_ERR_MSG = 'Sorry, something went wrong. Please try again later';
+
     var ERROR = 'error';
 
     var SUCCESS = 'success';
@@ -88,6 +90,8 @@
       error: {
         disable: false,
         handler: errorHandler,
+        beforeHandler: null,
+        afterHandler: null,
         redirect: false,
         className: ERROR,
         reporting: {
@@ -107,6 +111,8 @@
       success: {
         disable: false,
         handler: successHandler,
+        beforeHandler: null,
+        afterHandler: null,
         redirect: false,
         className: SUCCESS,
         reporting: {
@@ -150,7 +156,7 @@
     }
 
     function parseErrors (request) {
-      var errors = request.responseJSON.errors || request.responseJSON.error || request.responseJSON || request.responseText;
+      var errors = request.responseJSON ? (request.responseJSON.errors || request.responseJSON.error || request.responseJSON) : request.responseText || DEFAULT_ERR_MSG;
       if (typeof errors === 'string') {
         errors = {'': [errors]};
       }
@@ -182,13 +188,25 @@
     }
 
     function errorHandler (e, request, status, error) {
+      if (typeof options.error.beforeFilter === 'function') {
+        options.error.beforeFilter.call(this, e, request, status, error);
+      }
       if (options.error.redirect) redirect(request);
       reporters.error[options.error.reporting.style].call(this, request, status, error);
+      if (typeof options.error.afterFilter === 'function') {
+        options.error.afterFilter.call(this, e, request, status, error);
+      }
     }
 
     function successHandler (e, data, status, request) {
+      if (typeof options.success.beforeFilter === 'function') {
+        options.success.beforeFilter.call(this, e, data, status, request);
+      }
       if (options.success.redirect) redirect(request);
       reporters.success[options.success.reporting.style].call(this, data, status, request);
+      if (typeof options.success.afterFilter === 'function') {
+        options.success.afterFilter.call(this, e, data, status, request);
+      }
     }
 
     options = $.extend(true, defaultOptions, options || {});
@@ -196,5 +214,10 @@
     if (!options.before.disable) this.on('ajax:before', options.before.handler.bind(this));
     if (!options.error.disable) this.on('ajax:error', options.error.handler.bind(this));
     if (!options.success.disable) this.on('ajax:success', options.success.handler.bind(this));
+
+    this.options = options;
+    this.defaultOptions = defaultOptions;
+
+    return this;
   }
 })( jQuery );

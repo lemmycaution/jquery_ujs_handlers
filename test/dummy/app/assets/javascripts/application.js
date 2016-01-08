@@ -25,4 +25,10 @@ $(document).on('page:change', function () {
     error:{reporting:{style:'hint'}},
     success:{reporting:{style:'dialog'}}
   });
+  $('a[data-remote]').ujsh({
+    error:{reporting:{style:'dialog'}},
+    success: {reporting:{style: 'dialog'}, afterFilter: function (e, data, status, request) {
+      $(e.currentTarget).parents('tr').remove();
+    }}
+  });
 })
