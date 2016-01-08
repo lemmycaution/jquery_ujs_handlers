@@ -1,4 +1,4 @@
-<%= form_for(@user, remote: true, html: {data: { ujsh_resource: :user } }) do |f| %>
+<%= form_for(@user, format: :json, remote: true, html: {data: { ujsh_resource: :user } }) do |f| %>
   <% if @user.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(@user.errors.count, "error") %> prohibited this user from being saved:</h2>
@@ -25,7 +25,7 @@
   </div>
   <div class="field">
     <%= f.label :gender %><br>
-    <%= f.number_field :gender %>
+    <%= f.select :gender, @user.class.genders.keys, include_blank: true %>
   </div>
   <div class="field">
     <%= f.label :terms_accepted %><br>

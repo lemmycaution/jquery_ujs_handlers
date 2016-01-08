@@ -42,17 +42,15 @@
       error: {
         hint: function (request, status, error) {
           var errors = parseErrors(request);
-          var field, fieldErrors, $field, 
+          var field, fieldErrors, $field;
           var hintTmp = options.error.reporting.hint.tmp;
           var resource = this.data('ujsh-resource');
 
           for (field in errors) {
             fieldErrors = errors[field];
-            $field = this.find('[name="' + resource + '[' + field + ']"]');
+            $field = this.find('[type!=hidden][name="' + resource + '[' + field + ']"]');
             $field.toggleClass(options.error.className, true);
-            $field.insertAfter(
-              hintTmp.replace(/{{content}}/, fieldErrors.join(', '))
-            );
+            $(hintTmp.replace(/{{content}}/, fieldErrors.join(', '))).insertAfter($field);
           }
         },
         list: function (request, status, error) {
@@ -167,7 +165,7 @@
       if (options.success.redirect) redirect(request);
     }
 
-    options = $.extend(defaultOptions, options || {});
+    options = $.extend(true, defaultOptions, options || {});
 
     if (!options.before.disable) this.on('ajax:before', options.before.handler.bind(this));
     if (!options.error.disable) this.on('ajax:error', options.error.handler.bind(this));

@@ -10,4 +10,13 @@
 // Read Sprockets README (https://github.com/rails/sprockets#sprockets-directives) for details
 // about supported directives.
 //
-//= require_tree .
+//= require jquery
+//= require jquery_ujs
+//= require jquery_ujsh
+//= require turbolinks
+//= require_tree . 
+  
+$(document).on('page:change', function () {
+  $('form.new_user[data-remote]').ujsh({success:{redirect: true}});  
+  $('form.edit_user[data-remote]').ujsh();
+})
