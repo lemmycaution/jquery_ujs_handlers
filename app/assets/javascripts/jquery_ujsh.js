@@ -191,7 +191,9 @@
       if (typeof options.error.beforeFilter === 'function') {
         options.error.beforeFilter.call(this, e, request, status, error);
       }
-      if (options.error.redirect) redirect(request);
+      if (options.error.redirect) {
+        return redirect(request);
+      }
       reporters.error[options.error.reporting.style].call(this, request, status, error);
       if (typeof options.error.afterFilter === 'function') {
         options.error.afterFilter.call(this, e, request, status, error);
@@ -202,7 +204,9 @@
       if (typeof options.success.beforeFilter === 'function') {
         options.success.beforeFilter.call(this, e, data, status, request);
       }
-      if (options.success.redirect) redirect(request);
+      if (options.success.redirect) {
+        return redirect(request);
+      }
       reporters.success[options.success.reporting.style].call(this, data, status, request);
       if (typeof options.success.afterFilter === 'function') {
         options.success.afterFilter.call(this, e, data, status, request);
