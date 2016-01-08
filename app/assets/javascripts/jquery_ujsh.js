@@ -26,7 +26,7 @@
     var listItemTmp = '<li class="ujsh-list--item ujsh-list--item__{{modifier}}">{{content}}</li>';
 
     var dialogTmp = '' +
-    '<div class="ujsh-dialog ujsh-dialog__{{modifier}}">'
+    '<div class="ujsh-dialog ujsh-dialog__{{modifier}}">' +
     '<div class="ujsh-dialog--wrapper">' +
       '<div class="ujsh-dialog--container>' +
         '<div class="ujsh-dialog--header">' +
@@ -44,11 +44,10 @@
           var errors = parseErrors(request);
           var field, fieldErrors, $field;
           var hintTmp = options.error.reporting.hint.tmp;
-          var resource = this.data('ujsh-resource');
 
           for (field in errors) {
             fieldErrors = errors[field];
-            $field = this.find('[type!=hidden][name="' + resource + '[' + field + ']"]');
+            $field = this.find('[type!=hidden][name*="[' + field + ']"]');
             $field.toggleClass(options.error.className, true);
             $(hintTmp.replace(/{{content}}/, fieldErrors.join(', '))).insertAfter($field);
           }
@@ -59,7 +58,21 @@
         dialog: function (request, status, error) {
           var $list = requestToErrorList(request);
           var dialogTmp = options.error.reporting.dialog.tmp;
-          $dialog = $(dialogTmp.replace(/{{content}}/, $list[0].outerHTML));
+          var $dialog = $(dialogTmp.replace(/{{content}}/, $list[0].outerHTML));
+          $dialog.find('[data-ujsh-dialog-close]').on('click', dialogCloseHandler.bind($dialog));
+          $('body').prepend($dialog);
+        }
+      },
+      success: {
+        list: function (data, status, request) {
+          var $list = $(options.error.reporting.list.tmp);
+          var itemTmp = options.error.reporting.list.itemTmp;
+          $list.append(itemTmp.replace(/{{content}}/, data.notice));
+          this.prepend($list);
+        },
+        dialog: function (data, status, request) {
+          var dialogTmp = options.success.reporting.dialog.tmp;
+          var $dialog = $(dialogTmp.replace(/{{content}}/, data.notice));
           $dialog.find('[data-ujsh-dialog-close]').on('click', dialogCloseHandler.bind($dialog));
           $('body').prepend($dialog);
         }
@@ -97,7 +110,7 @@
         redirect: false,
         className: SUCCESS,
         reporting: {
-          style: 'dialog', // hint, list, dialog
+          style: DIALOG, // list, dialog
           hint: {
             tmp: hintTmp.replace(/{{modifier}}/g, SUCCESS)
           },
@@ -126,10 +139,13 @@
       for (field in errors) {
         fieldErrors = errors[field];
         items.push(
-          itemTmp.replace(/{{content}}/, field + ' ' + fieldErrors.join(', '))
+          itemTmp.replace(
+            /{{content}}/, 
+            '<strong>' + field.replace(/_/g, ' ') + '</strong> ' + fieldErrors.join(', ')
+          )
         );
       }
-      $list.html(items.join());
+      $list.html(items.join(''));
       return $list;
     }
 
@@ -152,7 +168,16 @@
 
     function beforeHandler (e) {
       if (options.before.clear) {
-        this.find('.ujsh-' + options.error.reporting.style).remove();
+        $('.ujsh-' + options.error.reporting.style).remove();
+        if (options.error.reporting.style === HINT) {
+          this.find(
+            'input.' + options.error.className + ', ' +
+            'select.' + options.error.className + ', ' +
+            'textarea.' + options.error.className
+          ).toggleClass(options.error.className, false);
+        }
+
+        $('.ujsh-' + options.success.reporting.style).remove();
       }
     }
 
@@ -163,6 +188,7 @@
 
     function successHandler (e, data, status, request) {
       if (options.success.redirect) redirect(request);
+      reporters.success[options.success.reporting.style].call(this, data, status, request);
     }
 
     options = $.extend(true, defaultOptions, options || {});

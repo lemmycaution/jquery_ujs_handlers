@@ -39,7 +39,7 @@ class UsersController < ApplicationController
     respond_to do |format|
       if @user.update(user_params)
         format.html { redirect_to @user, notice: 'User was successfully updated.' }
-        format.json { render :json => @user, notice: 'User was successfully updated.' }
+        format.json { render :json => {notice: 'User was successfully updated.'} }
       else
         format.html { render :edit }
         format.json { render :json => @user.errors, status: :unprocessable_entity }
@@ -52,7 +52,7 @@ class UsersController < ApplicationController
     respond_to do |format|
       if @user.destroy
         format.html { redirect_to users_url, notice: 'User was successfully destroyed.' }
-        format.json { render :json => @user, notice: 'User was successfully destroyed.' }
+        format.json { render :json => {notice: 'User was successfully destroyed.'} }
       else
         format.html { redirect_to users_url, alert: 'User was not destroyed.' }
         format.json { render :json => @user.errors, status: :unprocessable_entity }

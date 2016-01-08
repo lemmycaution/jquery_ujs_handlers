@@ -17,6 +17,12 @@
 //= require_tree . 
   
 $(document).on('page:change', function () {
-  $('form.new_user[data-remote]').ujsh({success:{redirect: true}});  
-  $('form.edit_user[data-remote]').ujsh();
+  $('form.new_user[data-remote]').ujsh({
+    error:{reporting:{style:'dialog'}},
+    success:{redirect: true}
+  });
+  $('form.edit_user[data-remote]').ujsh({
+    error:{reporting:{style:'hint'}},
+    success:{reporting:{style:'dialog'}}
+  });
 })
