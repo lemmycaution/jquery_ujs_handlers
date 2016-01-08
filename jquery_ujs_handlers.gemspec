@@ -9,9 +9,8 @@ Gem::Specification.new do |s|
   s.version     = JqueryUjsHandlers::VERSION
   s.authors     = ["Onur Uyar"]
   s.email       = ["me@onuruyar.com"]
-  s.homepage    = "TODO"
-  s.summary     = "TODO: Summary of JqueryUjsHandlers."
-  s.description = "TODO: Description of JqueryUjsHandlers."
+  s.homepage    = "https://github.com/lemmycaution/jquery_ujs_handlers"
+  s.summary     = "Bunch of jquery event handlers for dealing with standard Rails json responses."
   s.license     = "MIT"
 
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
