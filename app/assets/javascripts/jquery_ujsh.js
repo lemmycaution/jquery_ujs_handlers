@@ -30,7 +30,7 @@
     var dialogTmp = '' +
     '<div class="ujsh-dialog ujsh-dialog__{{modifier}}">' +
     '<div class="ujsh-dialog--wrapper">' +
-      '<div class="ujsh-dialog--container>' +
+      '<div class="ujsh-dialog--container">' +
         '<div class="ujsh-dialog--header">' +
           '<a class="ujsh-dialog--button-close" data-ujsh-dialog-close>&times;</a>' +
         '</div>' +
