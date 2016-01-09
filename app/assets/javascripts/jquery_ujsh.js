@@ -44,12 +44,17 @@
       error: {
         hint: function (request, status, error) {
           var errors = parseErrors(request);
-          var field, fieldErrors, $field;
+          var field, fieldErrors, $field, fieldSelector;
           var hintTmp = this.options.error.reporting.hint.tmp;
 
           for (field in errors) {
             fieldErrors = errors[field];
-            $field = this.find('[type!=hidden][name*="[' + field + ']"]');
+            fieldSelector = field;
+            if (field.indexOf('.') > -1) {
+              fieldSelector = field.split('.');
+              fieldSelector = fieldSelector[fieldSelector.length -1];
+            }
+            $field = this.find('[type!=hidden][name*="[' + fieldSelector + ']"]');
             $field.toggleClass(this.options.error.className, true);
             $(hintTmp.replace(/{{content}}/, fieldErrors.join(', '))).insertAfter($field);
           }
@@ -217,8 +222,6 @@
       }
     }
 
-    
-    
     return this.each(function() {
         var $element = $(this), 
             element = this;
