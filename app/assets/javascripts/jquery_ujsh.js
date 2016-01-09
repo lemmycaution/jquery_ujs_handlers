@@ -45,21 +45,21 @@
         hint: function (request, status, error) {
           var errors = parseErrors(request);
           var field, fieldErrors, $field;
-          var hintTmp = options.error.reporting.hint.tmp;
+          var hintTmp = this.options.error.reporting.hint.tmp;
 
           for (field in errors) {
             fieldErrors = errors[field];
             $field = this.find('[type!=hidden][name*="[' + field + ']"]');
-            $field.toggleClass(options.error.className, true);
+            $field.toggleClass(this.options.error.className, true);
             $(hintTmp.replace(/{{content}}/, fieldErrors.join(', '))).insertAfter($field);
           }
         },
         list: function (request, status, error) {
-          this.prepend(requestToErrorList(request));
+          this.prepend(requestToErrorList.call(this, request));
         },
         dialog: function (request, status, error) {
-          var $list = requestToErrorList(request);
-          var dialogTmp = options.error.reporting.dialog.tmp;
+          var $list = requestToErrorList.call(this, request);
+          var dialogTmp = this.options.error.reporting.dialog.tmp;
           var $dialog = $(dialogTmp.replace(/{{content}}/, $list[0].outerHTML));
           $dialog.find('[data-ujsh-dialog-close]').on('click', dialogCloseHandler.bind($dialog));
           $('body').prepend($dialog);
@@ -67,13 +67,13 @@
       },
       success: {
         list: function (data, status, request) {
-          var $list = $(options.error.reporting.list.tmp);
-          var itemTmp = options.error.reporting.list.itemTmp;
+          var $list = $(this.options.error.reporting.list.tmp);
+          var itemTmp = this.options.error.reporting.list.itemTmp;
           $list.append(itemTmp.replace(/{{content}}/, data.notice));
           this.prepend($list);
         },
         dialog: function (data, status, request) {
-          var dialogTmp = options.success.reporting.dialog.tmp;
+          var dialogTmp = this.options.success.reporting.dialog.tmp;
           var $dialog = $(dialogTmp.replace(/{{content}}/, data.notice));
           $dialog.find('[data-ujsh-dialog-close]').on('click', dialogCloseHandler.bind($dialog));
           $('body').prepend($dialog);
@@ -138,8 +138,8 @@
     function requestToErrorList (request) {
       var errors = parseErrors(request);
       var field, fieldErrors;
-      var $list = $(options.error.reporting.list.tmp);
-      var itemTmp = options.error.reporting.list.itemTmp;
+      var $list = $(this.options.error.reporting.list.tmp);
+      var itemTmp = this.options.error.reporting.list.itemTmp;
       var items = [];
 
       for (field in errors) {
@@ -173,59 +173,66 @@
     }
 
     function beforeHandler (e) {
-      if (options.before.clear) {
-        $('.ujsh-' + options.error.reporting.style).remove();
-        if (options.error.reporting.style === HINT) {
+      if (this.options.before.clear) {
+        $('.ujsh-' + this.options.error.reporting.style).remove();
+        if (this.options.error.reporting.style === HINT) {
           this.find(
-            'input.' + options.error.className + ', ' +
-            'select.' + options.error.className + ', ' +
-            'textarea.' + options.error.className
-          ).toggleClass(options.error.className, false);
+            'input.' + this.options.error.className + ', ' +
+            'select.' + this.options.error.className + ', ' +
+            'textarea.' + this.options.error.className
+          ).toggleClass(this.options.error.className, false);
         }
 
-        $('.ujsh-' + options.success.reporting.style).remove();
+        $('.ujsh-' + this.options.success.reporting.style).remove();
       }
     }
 
     function errorHandler (e, request, status, error) {
-      if (typeof options.error.beforeFilter === 'function') {
-        options.error.beforeFilter.call(this, e, request, status, error);
+      if (typeof this.options.error.beforeFilter === 'function') {
+        if (!this.options.error.beforeFilter.call(this, e, request, status, error)) {
+          return;
+        }
       }
-      if (options.error.redirect) {
+      if (this.options.error.redirect) {
         return redirect(request);
       }
-      reporters.error[options.error.reporting.style].call(this, request, status, error);
-      if (typeof options.error.afterFilter === 'function') {
-        options.error.afterFilter.call(this, e, request, status, error);
+      reporters.error[this.options.error.reporting.style].call(this, request, status, error);
+      if (typeof this.options.error.afterFilter === 'function') {
+        this.options.error.afterFilter.call(this, e, request, status, error);
       }
     }
 
     function successHandler (e, data, status, request) {
-      if (typeof options.success.beforeFilter === 'function') {
-        options.success.beforeFilter.call(this, e, data, status, request);
+      if (typeof this.options.success.beforeFilter === 'function') {
+        if (!this.options.success.beforeFilter.call(this, e, data, status, request)) {
+          return;
+        }
       }
-      if (options.success.redirect) {
+      if (this.options.success.redirect) {
         return redirect(request);
       }
-      reporters.success[options.success.reporting.style].call(this, data, status, request);
-      if (typeof options.success.afterFilter === 'function') {
-        options.success.afterFilter.call(this, e, data, status, request);
+      reporters.success[this.options.success.reporting.style].call(this, data, status, request);
+      if (typeof this.options.success.afterFilter === 'function') {
+        this.options.success.afterFilter.call(this, e, data, status, request);
       }
     }
 
-    options = $.extend(true, defaultOptions, options || {});
-    if (this.data('error-redirect')) options.error.redirect = this.data('error-redirect')
-    if (this.data('success-redirect')) options.success.redirect = this.data('success-redirect')
-    if (this.data('error-reporting-style')) options.error.reporting.style = this.data('error-reporting-style')
-    if (this.data('success-reporting-style')) options.error.reporting.style = this.data('success-reporting-style')
+    
+    
+    return this.each(function() {
+        var $element = $(this), 
+            element = this;
 
-    if (!options.before.disable) this.on('ajax:before', options.before.handler.bind(this));
-    if (!options.error.disable) this.on('ajax:error', options.error.handler.bind(this));
-    if (!options.success.disable) this.on('ajax:success', options.success.handler.bind(this));
+         $element.options = $.extend(true, {}, defaultOptions, options || {});
 
-    this.options = options;
-    this.defaultOptions = defaultOptions;
+         if ($element.data('error-redirect')) $element.options.error.redirect = $element.data('error-redirect')
+         if ($element.data('success-redirect')) $element.options.success.redirect = $element.data('success-redirect')
+         if ($element.data('error-reporting-style')) $element.options.error.reporting.style = $element.data('error-reporting-style')
+         if ($element.data('success-reporting-style')) $element.options.error.reporting.style = $element.data('success-reporting-style')
 
-    return this;
+         if (!$element.options.before.disable) $element.on('ajax:before', $element.options.before.handler.bind($element));
+         if (!$element.options.error.disable) $element.on('ajax:error', $element.options.error.handler.bind($element));
+         if (!$element.options.success.disable) $element.on('ajax:success', $element.options.success.handler.bind($element));
+    });
   }
 })( jQuery );
