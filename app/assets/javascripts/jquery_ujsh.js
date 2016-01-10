@@ -184,18 +184,16 @@
 
     function beforeHandler (e) {
       var className;
-      if (this.options.before.clear) {
-        if (this.options.error.reporting.style === HINT) {
-          className = this.options.error.className;
-          this.find(
-            'input.' + className + ', ' +
-            'select.' + className + ', ' +
-            'textarea.' + className
-          ).toggleClass(className, false);
-        }
-        $('.ujsh-' + this.options.error.reporting.style).remove();
-        $('.ujsh-' + this.options.success.reporting.style).remove();
+      if (this.options.error.reporting.style === HINT) {
+        className = this.options.error.className;
+        this.find(
+          'input.' + className + ', ' +
+          'select.' + className + ', ' +
+          'textarea.' + className
+        ).toggleClass(className, false);
       }
+      $('.ujsh-' + this.options.error.reporting.style).remove();
+      $('.ujsh-' + this.options.success.reporting.style).remove();
     }
 
     function errorHandler () {
