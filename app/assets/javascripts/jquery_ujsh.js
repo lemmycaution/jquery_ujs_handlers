@@ -42,7 +42,7 @@
 
     var reporters = {
       error: {
-        hint: function (request, status, error) {
+        hint: function (e, request, status, error) {
           var errors = parseErrors(request);
           var field, fieldErrors, $field, fieldSelector;
           var hintTmp = this.options.error.reporting.hint.tmp;
@@ -59,10 +59,10 @@
             $(hintTmp.replace(/{{content}}/, fieldErrors.join(', '))).insertAfter($field);
           }
         },
-        list: function (request, status, error) {
+        list: function (e, request, status, error) {
           this.prepend(requestToErrorList.call(this, request));
         },
-        dialog: function (request, status, error) {
+        dialog: function (e, request, status, error) {
           var $list = requestToErrorList.call(this, request);
           var dialogTmp = this.options.error.reporting.dialog.tmp;
           var $dialog = $(dialogTmp.replace(/{{content}}/, $list[0].outerHTML));
@@ -71,15 +71,19 @@
         }
       },
       success: {
-        list: function (data, status, request) {
-          var $list = $(this.options.error.reporting.list.tmp);
-          var itemTmp = this.options.error.reporting.list.itemTmp;
-          $list.append(itemTmp.replace(/{{content}}/, data.notice));
+        list: function (e, data, status, request) {
+          var content = parseSuccess(data), $list, itemTmp;
+          if (typeof content === 'undefined' || content == null) return;
+          $list = $(this.options.success.reporting.list.tmp);
+          itemTmp = this.options.success.reporting.list.itemTmp;
+          $list.append(itemTmp.replace(/{{content}}/, content));
           this.prepend($list);
         },
-        dialog: function (data, status, request) {
-          var dialogTmp = this.options.success.reporting.dialog.tmp;
-          var $dialog = $(dialogTmp.replace(/{{content}}/, data.notice));
+        dialog: function (e, data, status, request) {
+          var content = parseSuccess(data), dialogTmp, $dialog;
+          if (typeof content === 'undefined' || content == null) return;
+          dialogTmp = this.options.success.reporting.dialog.tmp;
+          $dialog = $(dialogTmp.replace(/{{content}}/, content));
           $dialog.find('[data-ujsh-dialog-close]').on('click', dialogCloseHandler.bind($dialog));
           $('body').prepend($dialog);
         }
@@ -94,7 +98,7 @@
       },
       error: {
         disable: false,
-        handler: errorHandler,
+        handler: handler('error'),
         beforeHandler: null,
         afterHandler: null,
         redirect: false,
@@ -115,7 +119,7 @@
       },
       success: {
         disable: false,
-        handler: successHandler,
+        handler: handler('success'),
         beforeHandler: null,
         afterHandler: null,
         redirect: false,
@@ -167,6 +171,13 @@
       }
       return errors;
     }
+    
+    function parseSuccess (data) {
+      if (typeof data === 'string') {
+        return data;
+      }
+      return data && data.notice;
+    }
 
     function redirect (request) {
       var location = request.getResponseHeader('Location');
@@ -178,47 +189,32 @@
     }
 
     function beforeHandler (e) {
+      var className;
       if (this.options.before.clear) {
-        $('.ujsh-' + this.options.error.reporting.style).remove();
         if (this.options.error.reporting.style === HINT) {
+          className = this.options.error.className;
           this.find(
-            'input.' + this.options.error.className + ', ' +
-            'select.' + this.options.error.className + ', ' +
-            'textarea.' + this.options.error.className
-          ).toggleClass(this.options.error.className, false);
+            'input.' + className + ', ' +
+            'select.' + className + ', ' +
+            'textarea.' + className
+          ).toggleClass(className, false);
         }
-
+        $('.ujsh-' + this.options.error.reporting.style).remove();        
         $('.ujsh-' + this.options.success.reporting.style).remove();
       }
     }
 
-    function errorHandler (e, request, status, error) {
-      if (typeof this.options.error.beforeFilter === 'function') {
-        if (!this.options.error.beforeFilter.call(this, e, request, status, error)) {
-          return;
-        }
-      }
-      if (this.options.error.redirect) {
-        return redirect(request);
-      }
-      reporters.error[this.options.error.reporting.style].call(this, request, status, error);
-      if (typeof this.options.error.afterFilter === 'function') {
-        this.options.error.afterFilter.call(this, e, request, status, error);
-      }
-    }
-
-    function successHandler (e, data, status, request) {
-      if (typeof this.options.success.beforeFilter === 'function') {
-        if (!this.options.success.beforeFilter.call(this, e, data, status, request)) {
-          return;
-        }
-      }
-      if (this.options.success.redirect) {
-        return redirect(request);
-      }
-      reporters.success[this.options.success.reporting.style].call(this, data, status, request);
-      if (typeof this.options.success.afterFilter === 'function') {
-        this.options.success.afterFilter.call(this, e, data, status, request);
+    function handler (event) {
+      return function () {
+        var reporter = reporters[event][this.options[event].reporting.style];
+        var beforeFilter = this.options[event].beforeFilter;
+        var redirectTo = this.options[event].redirect;
+        var afterFilter = this.options[event].afterFilter;
+      
+        if (typeof beforeFilter === 'function' && !beforeFilter.apply(this, arguments)) return;
+        if (redirectTo) return redirect(arguments[event === 'error' ? 1 : 3]);
+        if (typeof reporter === 'function') reporter.apply(this, arguments);
+        if (typeof afterFilter === 'function') afterFilter.apply(this, arguments);
       }
     }
 
