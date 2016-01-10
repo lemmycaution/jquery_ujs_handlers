@@ -92,15 +92,12 @@
     
     var defaultOptions = {
       before: {
-        disable: false,
         handler: beforeHandler,
-        clear: true
       },
       error: {
-        disable: false,
-        handler: handler('error'),
-        beforeHandler: null,
-        afterHandler: null,
+        handler: errorHandler,
+        beforeFilter: null,
+        afterFilter: null,
         redirect: false,
         className: ERROR,
         reporting: {
@@ -118,10 +115,9 @@
         }
       },
       success: {
-        disable: false,
-        handler: handler('success'),
-        beforeHandler: null,
-        afterHandler: null,
+        handler: successHandler,
+        beforeFilter: null,
+        afterFilter: null,
         redirect: false,
         className: SUCCESS,
         reporting: {
@@ -165,13 +161,13 @@
     }
 
     function parseErrors (request) {
-      var errors = request.responseJSON ? (request.responseJSON.errors || request.responseJSON.error || request.responseJSON) : request.responseText || DEFAULT_ERR_MSG;
+      var errors = request.responseJSON ? (request.responseJSON.errors || request.responseJSON.error || request.responseJSON.alert || request.responseJSON) : request.responseText || DEFAULT_ERR_MSG;
       if (typeof errors === 'string') {
         errors = {'': [errors]};
       }
       return errors;
     }
-    
+
     function parseSuccess (data) {
       if (typeof data === 'string') {
         return data;
@@ -180,11 +176,9 @@
     }
 
     function redirect (request) {
-      var location = request.getResponseHeader('Location');
+      var location = request.getResponseHeader('Location') || (request.responseJSON && request.responseJSON.location);
       if (location) {
         window.location.href = location;
-      } else {
-        window.location.reload();
       }
     }
 
@@ -199,39 +193,61 @@
             'textarea.' + className
           ).toggleClass(className, false);
         }
-        $('.ujsh-' + this.options.error.reporting.style).remove();        
+        $('.ujsh-' + this.options.error.reporting.style).remove();
         $('.ujsh-' + this.options.success.reporting.style).remove();
       }
     }
 
-    function handler (event) {
-      return function () {
-        var reporter = reporters[event][this.options[event].reporting.style];
-        var beforeFilter = this.options[event].beforeFilter;
-        var redirectTo = this.options[event].redirect;
-        var afterFilter = this.options[event].afterFilter;
-      
-        if (typeof beforeFilter === 'function' && !beforeFilter.apply(this, arguments)) return;
-        if (redirectTo) return redirect(arguments[event === 'error' ? 1 : 3]);
-        if (typeof reporter === 'function') reporter.apply(this, arguments);
-        if (typeof afterFilter === 'function') afterFilter.apply(this, arguments);
+    function errorHandler () {
+      var event = ERROR;
+      var reporter = reporters[event][this.options[event].reporting.style];
+      var beforeFilter = this.options[event].beforeFilter;
+      var redirectTo = this.options[event].redirect;
+      var afterFilter = this.options[event].afterFilter;
+    
+      if (typeof beforeFilter === 'function' && !beforeFilter.apply(this, arguments)) return;
+      if (redirectTo) return redirect(arguments[event === ERROR ? 1 : 3]);
+      if (typeof reporter === 'function') reporter.apply(this, arguments);
+      if (typeof afterFilter === 'function') afterFilter.apply(this, arguments);
+    }
+
+    function successHandler () {
+      var event = SUCCESS;
+
+      // handle 401 but with 200 status code 
+      var _arguments = arguments;
+      if (_arguments[3].responseText === '{"error":"You need to sign in or sign up before continuing."}') {
+        event = ERROR
+        _arguments[3].status = 401
+        _arguments = [_arguments[0], _arguments[3], 'error', 'Unauthenticated']
       }
+
+      var reporter = reporters[event][this.options[event].reporting.style];
+      var beforeFilter = this.options[event].beforeFilter;
+      var redirectTo = this.options[event].redirect;
+      var afterFilter = this.options[event].afterFilter;
+    
+      if (typeof beforeFilter === 'function' && !beforeFilter.apply(this, _arguments)) return;
+      if (redirectTo) return redirect(_arguments[event === ERROR ? 1 : 3]);
+      if (typeof reporter === 'function') reporter.apply(this, _arguments);
+      if (typeof afterFilter === 'function') afterFilter.apply(this, _arguments);
     }
 
     return this.each(function() {
-        var $element = $(this), 
-            element = this;
+      var $element = $(this), 
+      element = this;
 
-         $element.options = $.extend(true, {}, defaultOptions, options || {});
+      $element.options = $.extend(true, {}, defaultOptions, options || {});
 
-         if ($element.data('error-redirect')) $element.options.error.redirect = $element.data('error-redirect')
-         if ($element.data('success-redirect')) $element.options.success.redirect = $element.data('success-redirect')
-         if ($element.data('error-reporting-style')) $element.options.error.reporting.style = $element.data('error-reporting-style')
-         if ($element.data('success-reporting-style')) $element.options.error.reporting.style = $element.data('success-reporting-style')
+      if ($element.data('error-redirect')) $element.options.error.redirect = $element.data('error-redirect');
+      if ($element.data('success-redirect')) $element.options.success.redirect = $element.data('success-redirect');
+      if ($element.data('error-reporting-style')) $element.options.error.reporting.style = $element.data('error-reporting-style');
+      if ($element.data('success-reporting-style')) $element.options.error.reporting.style = $element.data('success-reporting-style');
 
-         if (!$element.options.before.disable) $element.on('ajax:before', $element.options.before.handler.bind($element));
-         if (!$element.options.error.disable) $element.on('ajax:error', $element.options.error.handler.bind($element));
-         if (!$element.options.success.disable) $element.on('ajax:success', $element.options.success.handler.bind($element));
+      $element
+      .on('ajax:before', $element.options.before.handler.bind($element))
+      .on('ajax:error', $element.options.error.handler.bind($element))
+      .on('ajax:success', $element.options.success.handler.bind($element));
     });
   }
 })( jQuery );
