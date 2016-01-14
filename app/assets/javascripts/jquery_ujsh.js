@@ -175,9 +175,11 @@
       return data && data.notice;
     }
 
-    function redirect (request) {
+    function redirect (request, reload) {
       var location = request.getResponseHeader('Location') || (request.responseJSON && request.responseJSON.location);
-      if (location) {
+      if (reload) {
+        window.location.reload();
+      } else if (location) {
         window.location.href = location;
       }
     }
@@ -204,7 +206,7 @@
       var afterFilter = this.options[event].afterFilter;
     
       if (typeof beforeFilter === 'function' && !beforeFilter.apply(this, arguments)) return;
-      if (redirectTo) return redirect(arguments[event === ERROR ? 1 : 3]);
+      if (redirectTo) return redirect(arguments[event === ERROR ? 1 : 3], redirectTo);
       if (typeof reporter === 'function') reporter.apply(this, arguments);
       if (typeof afterFilter === 'function') afterFilter.apply(this, arguments);
     }
@@ -225,7 +227,7 @@
       var redirectTo = this.options[event].redirect;
       var afterFilter = this.options[event].afterFilter;
       if (typeof beforeFilter === 'function' && !beforeFilter.apply(this, _arguments)) return;
-      if (redirectTo) return redirect(_arguments[event === ERROR ? 1 : 3]);
+      if (redirectTo) return redirect(_arguments[event === ERROR ? 1 : 3], redirectTo);
       if (typeof reporter === 'function') reporter.apply(this, _arguments);
       if (typeof afterFilter === 'function') afterFilter.apply(this, _arguments);
     }
