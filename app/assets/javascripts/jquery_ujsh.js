@@ -240,7 +240,7 @@
       if ($element.data('error-redirect')) $element.options.error.redirect = $element.data('error-redirect');
       if ($element.data('success-redirect')) $element.options.success.redirect = $element.data('success-redirect');
       if ($element.data('error-reporting-style')) $element.options.error.reporting.style = $element.data('error-reporting-style');
-      if ($element.data('success-reporting-style')) $element.options.error.reporting.style = $element.data('success-reporting-style');
+      if ($element.data('success-reporting-style')) $element.options.success.reporting.style = $element.data('success-reporting-style');
 
       $element
       .on('ajax:before', $element.options.before.handler.bind($element))
