@@ -224,7 +224,6 @@
       var beforeFilter = this.options[event].beforeFilter;
       var redirectTo = this.options[event].redirect;
       var afterFilter = this.options[event].afterFilter;
-      console.log(event, this.options[event].redirect)
       if (typeof beforeFilter === 'function' && !beforeFilter.apply(this, _arguments)) return;
       if (redirectTo) return redirect(_arguments[event === ERROR ? 1 : 3]);
       if (typeof reporter === 'function') reporter.apply(this, _arguments);
