@@ -224,7 +224,7 @@
       var beforeFilter = this.options[event].beforeFilter;
       var redirectTo = this.options[event].redirect;
       var afterFilter = this.options[event].afterFilter;
-    
+      console.log(event, this.options[event].redirect)
       if (typeof beforeFilter === 'function' && !beforeFilter.apply(this, _arguments)) return;
       if (redirectTo) return redirect(_arguments[event === ERROR ? 1 : 3]);
       if (typeof reporter === 'function') reporter.apply(this, _arguments);
@@ -237,8 +237,8 @@
 
       $element.options = $.extend(true, {}, defaultOptions, options || {});
 
-      if ($element.data('error-redirect')) $element.options.error.redirect = $element.data('error-redirect');
-      if ($element.data('success-redirect')) $element.options.success.redirect = $element.data('success-redirect');
+      if (typeof $element.data('error-redirect') !== 'undefined') $element.options.error.redirect = $element.data('error-redirect');
+      if (typeof $element.data('success-redirect') !== 'undefined') $element.options.success.redirect = $element.data('success-redirect');
       if ($element.data('error-reporting-style')) $element.options.error.reporting.style = $element.data('error-reporting-style');
       if ($element.data('success-reporting-style')) $element.options.success.reporting.style = $element.data('success-reporting-style');
 
