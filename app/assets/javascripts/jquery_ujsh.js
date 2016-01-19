@@ -99,6 +99,7 @@
         beforeFilter: null,
         afterFilter: null,
         redirect: false,
+        reload: false,
         className: ERROR,
         reporting: {
           style: HINT, // hint, list, dialog
@@ -119,6 +120,7 @@
         beforeFilter: null,
         afterFilter: null,
         redirect: false,
+        reload: false,
         className: SUCCESS,
         reporting: {
           style: DIALOG, // list, dialog
@@ -203,10 +205,11 @@
       var reporter = reporters[event][this.options[event].reporting.style];
       var beforeFilter = this.options[event].beforeFilter;
       var redirectTo = this.options[event].redirect;
+      var reload = this.options[event].reload;      
       var afterFilter = this.options[event].afterFilter;
     
       if (typeof beforeFilter === 'function' && !beforeFilter.apply(this, arguments)) return;
-      if (redirectTo) return redirect(arguments[event === ERROR ? 1 : 3], redirectTo);
+      if (redirectTo) return redirect(arguments[event === ERROR ? 1 : 3], reload);
       if (typeof reporter === 'function') reporter.apply(this, arguments);
       if (typeof afterFilter === 'function') afterFilter.apply(this, arguments);
     }
@@ -225,9 +228,10 @@
       var reporter = reporters[event][this.options[event].reporting.style];
       var beforeFilter = this.options[event].beforeFilter;
       var redirectTo = this.options[event].redirect;
+      var reload = this.options[event].reload;      
       var afterFilter = this.options[event].afterFilter;
       if (typeof beforeFilter === 'function' && !beforeFilter.apply(this, _arguments)) return;
-      if (redirectTo) return redirect(_arguments[event === ERROR ? 1 : 3], redirectTo);
+      if (redirectTo) return redirect(_arguments[event === ERROR ? 1 : 3], reload);
       if (typeof reporter === 'function') reporter.apply(this, _arguments);
       if (typeof afterFilter === 'function') afterFilter.apply(this, _arguments);
     }
