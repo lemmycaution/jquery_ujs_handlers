@@ -244,6 +244,8 @@
 
       if (typeof $element.data('error-redirect') !== 'undefined') $element.options.error.redirect = $element.data('error-redirect');
       if (typeof $element.data('success-redirect') !== 'undefined') $element.options.success.redirect = $element.data('success-redirect');
+      if (typeof $element.data('error-reload') !== 'undefined') $element.options.error.reload = $element.data('error-reload');
+      if (typeof $element.data('success-reload') !== 'undefined') $element.options.success.reload = $element.data('success-reload');
       if ($element.data('error-reporting-style')) $element.options.error.reporting.style = $element.data('error-reporting-style');
       if ($element.data('success-reporting-style')) $element.options.success.reporting.style = $element.data('success-reporting-style');
 
