@@ -1,3 +1,3 @@
 module JqueryUjsHandlers
-  VERSION = "0.0.9.debug"
+  VERSION = "0.0.9"
 end
