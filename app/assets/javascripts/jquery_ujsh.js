@@ -228,9 +228,11 @@
       var reporter = reporters[event][this.options[event].reporting.style];
       var beforeFilter = this.options[event].beforeFilter;
       var redirectTo = this.options[event].redirect;
-      var reload = this.options[event].reload;      
+      var reload = this.options[event].reload;
       var afterFilter = this.options[event].afterFilter;
+      console.log('successHandler beforeFilter', beforeFilter)
       if (typeof beforeFilter === 'function' && !beforeFilter.apply(this, _arguments)) return;
+      console.log('successHandler redirectTo', redirectTo, _arguments[event === ERROR ? 1 : 3], reload)
       if (redirectTo) return redirect(_arguments[event === ERROR ? 1 : 3], reload);
       if (typeof reporter === 'function') reporter.apply(this, _arguments);
       if (typeof afterFilter === 'function') afterFilter.apply(this, _arguments);
